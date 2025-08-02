@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.37.4.10188",
-      "templateHash": "8798088044214969023"
+      "templateHash": "18084735929345665494"
     }
   },
   "parameters": {
@@ -264,6 +264,31 @@
         "d365foApi"
       ]
     },
+    "apimServiceDiagnostics": {
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "apiVersion": "2021-05-01-preview",
+      "scope": "[format('Microsoft.ApiManagement/service/{0}', format('D365FOAPIManagement-{0}', take(uniqueString(tenant().tenantId, resourceGroup().id), 5)))]",
+      "name": "APIMAnalytics",
+      "properties": {
+        "workspaceId": "[reference('appInsights').outputs.logAnalyticsWorkspaceId.value]",
+        "logs": [
+          {
+            "category": "GatewayLogs",
+            "enabled": true
+          }
+        ],
+        "metrics": [
+          {
+            "category": "AllMetrics",
+            "enabled": true
+          }
+        ]
+      },
+      "dependsOn": [
+        "apiManagement",
+        "appInsights"
+      ]
+    },
     "appInsights": {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
@@ -286,7 +311,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.37.4.10188",
-              "templateHash": "1215598115032797318"
+              "templateHash": "11847530913114245845"
             }
           },
           "parameters": {
@@ -347,6 +372,10 @@
             "applicationInsightsInstrumentationKey": {
               "type": "securestring",
               "value": "[reference('appInsights').InstrumentationKey]"
+            },
+            "logAnalyticsWorkspaceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
             }
           }
         }
