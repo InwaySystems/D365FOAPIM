@@ -90,6 +90,21 @@ resource policyFragmentsResources 'Microsoft.ApiManagement/service/policyFragmen
   }
 ]
 
+// Add API for D365FO
+resource d365foApi 'Microsoft.ApiManagement/service/apis@2024-05-01' = {
+  parent: apiManagement
+  name: 'D365FOAPI'
+  properties: {
+    displayName: 'D365FO API'
+    format: 'openapi'
+    value: loadTextContent('D365FO.openapi.yaml')
+    path: '/d365fo'
+    protocols: [
+      'https'
+    ]
+  }
+}
+
 // Add Application Insights for monitoring
 var applicationInsightsName string = 'appInsights${uniqueString(resourceGroup().id)}'
 module appInsights 'appInsights.bicep' = {

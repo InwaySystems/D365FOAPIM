@@ -1,0 +1,49 @@
+openapi: 3.0.1
+info:
+  title: D365FO
+  version: '0.1'
+paths:
+  /*:
+    patch:
+      summary: PATCH
+      operationId: PATCH
+      responses:
+        '200':
+          description: ''
+    delete:
+      summary: DELETE
+      operationId: DELETE
+      responses:
+        '200':
+          description: ''
+    get:
+      summary: GET
+      operationId: GET
+      responses:
+        '200':
+          description: ''
+    put:
+      summary: PUT
+      operationId: PUT
+      responses:
+        '200':
+          description: ''
+    post:
+      summary: POST
+      operationId: POST
+      responses:
+        '200':
+          description: ''
+components:
+  securitySchemes:
+    apiKeyHeader:
+      type: apiKey
+      name: Ocp-Apim-Subscription-Key
+      in: header
+    apiKeyQuery:
+      type: apiKey
+      name: subscription-key
+      in: query
+security:
+  - apiKeyHeader: [ ]
+  - apiKeyQuery: [ ]
