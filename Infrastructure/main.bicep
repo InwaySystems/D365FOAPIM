@@ -105,6 +105,17 @@ resource d365foApi 'Microsoft.ApiManagement/service/apis@2024-05-01' = {
   }
 }
 
+resource d365foApiPolicy 'Microsoft.ApiManagement/service/apis/policies@2024-05-01' = {
+  parent: d365foApi
+  name: 'policy'
+  properties: {
+    value: loadTextContent('D365FOAPIPolicy.xml')
+  }
+  dependsOn: [
+    policyFragmentsResources
+  ]
+}
+
 // Add Application Insights for monitoring
 var applicationInsightsName string = 'appInsights${uniqueString(resourceGroup().id)}'
 module appInsights 'appInsights.bicep' = {
@@ -139,4 +150,32 @@ resource apimLogger 'Microsoft.ApiManagement/service/loggers@2024-05-01' = {
   dependsOn: [
     secretNamedValueAppInsights
   ]
+}
+
+var logSettings = {
+  request: {
+    body: {
+      bytes: 8192
+    }
+  }
+  response: {
+    body: {
+      bytes: 8192
+    }
+  }
+}
+resource d365foApiDiagnostics 'Microsoft.ApiManagement/service/apis/diagnostics@2024-05-01' = {
+  parent: d365foApi
+  name: 'applicationinsights'
+  properties: {
+    loggerId: apimLogger.id
+    alwaysLog: 'allErrors'
+    logClientIp: true
+    sampling: {
+      samplingType: 'fixed'
+      percentage: 100
+    }
+    frontend: logSettings
+    backend: logSettings
+  }
 }
