@@ -1,0 +1,20 @@
+<!--
+    - <inbound> fragment
+-->
+<fragment>
+	<!-- Serialize headers with line breaks -->
+	<set-variable name="allHeaders" value="@{
+		return string.Join(
+			&quot;\n&quot;,
+			context.Request.Headers
+				.Where(h =&gt; h.Key != &quot;Authorization&quot; &amp;&amp; h.Key != &quot;Ocp-Apim-Subscription-Key&quot;)
+				.Select(h =&gt; h.Key + &quot;: &quot; + string.Join(&quot;, &quot;, h.Value))
+		);
+	}" />
+	<!-- Output to trace -->
+	<trace source="log-all-headers" severity="information">
+        @{
+            return "Request Headers:\n" + context.Variables["allHeaders"];
+        }
+    </trace>
+</fragment>
