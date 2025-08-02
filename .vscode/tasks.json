@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build azuredeploy.json",
+      "type": "shell",
+      "command": "az",
+      "args": [
+        "bicep", "build",
+        "--file", "Infrastructure/main.bicep",
+        "--outfile", "azuredeploy.json"
+      ],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
