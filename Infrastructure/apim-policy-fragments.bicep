@@ -23,6 +23,11 @@ var SetServiceBackendBasedOnEnvironmentVariableFragment = {
   value: loadTextContent('apim-policy-fragments/SetServiceBackendBasedOnEnvironmentVariable.xml')
   description: 'Sets the backend service based on the "environment" variable. The variable is set by the SetEnvironmentVariableFragment.'
 }
+var LogHeadersFragment = {
+  name: 'LogHeaders'
+  value: loadTextContent('apim-policy-fragments/LogHeaders.xml')
+  description: 'Logs all incoming request headers for debugging purposes.'
+}
 
 
 @export()
@@ -32,4 +37,5 @@ var fragments = [
   SetEnvironmentVariableFragment
   SetMicrosoftOAuthorizationHeaderCachedFragment
   SetServiceBackendBasedOnEnvironmentVariableFragment
+  LogHeadersFragment
 ]

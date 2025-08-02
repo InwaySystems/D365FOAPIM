@@ -13,6 +13,8 @@
 <policies>
 	<inbound>
 		<base />
+		<!-- Log all incoming request headers -->
+		<include-fragment fragment-id="LogHeaders" />
 		<!-- Allow requester to determine backend based on Environment header -->
 		<include-fragment fragment-id="SetEnvironmentVariable" />
 		<include-fragment fragment-id="SetServiceBackendBasedOnEnvironmentVariable" />
