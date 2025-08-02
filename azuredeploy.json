@@ -6,10 +6,17 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.177.2456",
-      "templateHash": "6775210457001635669"
+      "templateHash": "11360386519972669397"
     }
   },
   "parameters": {
+    "tenantId": {
+      "type": "string",
+      "defaultValue": "[tenant().tenantId]",
+      "metadata": {
+        "description": "Id (guid) of the tenant of the D365FO environment.\nYou can find the tenant id in the about form of the D365FO environment in the licenses section under the name \"Serial number\".\nBy default, the tenant id of the Azure Directory where this template is deployed will be used.\n"
+      }
+    },
     "d365foEnvironmentUrl": {
       "type": "string",
       "defaultValue": "https://d365fo-environment-url.dynamics.com",
@@ -52,7 +59,7 @@
     "_1._2": "<!--\n    - <inbound> fragment\n-->\n<fragment>\n\t<set-query-parameter name=\"cross-company\" exists-action=\"override\">\n\t\t<value>true</value>\n\t</set-query-parameter>\n</fragment>",
     "_1._3": "<!--\n    - <outbound> fragment\n-->\n<fragment>\n\t<retry condition=\"@(context.Response.StatusCode == 429)\" count=\"3\" interval=\"10\" first-fast-retry=\"false\" />\n</fragment>",
     "_1._4": "<!-- \n    - <inbound> fragment\n-->\n<fragment>\n\t<set-variable name=\"environment\" value=\"@(context.Request.Headers.GetValueOrDefault(&quot;Environment&quot;, &quot;{{DefaultD365FOEnvironment}}&quot;))\" />\n</fragment>",
-    "_1._5": "<!--\n    IMPORTANT:\n    - <inbound> fragment\n    - Requires the environment variable. Best used in combination with SetEnvironmentVariable fragment.\n    - Also requires the following named values\n        - {{TrivagoTenantId}}\n        - {{D365FOClientId}}\n        - {{D365FOClientSecret}}\n-->\n<fragment>\n\t<!-- Fetch token from cache -->\n\t<cache-lookup-value key=\"@((string)context.Variables[&quot;environment&quot;] + &quot;-token-{{D365FOClientId}}&quot;)\" variable-name=\"bearerToken\" />\n\t<choose>\n\t\t<!-- When a bearerToken is not available in cache -->\n\t\t<when condition=\"@(!context.Variables.ContainsKey(&quot;bearerToken&quot;))\">\n\t\t\t<send-request mode=\"new\" response-variable-name=\"oauthResponse\" timeout=\"20\" ignore-error=\"false\">\n\t\t\t\t<set-url>https://login.microsoftonline.com/{{TenantId}}/oauth2/token</set-url>\n\t\t\t\t<set-method>POST</set-method>\n\t\t\t\t<set-header name=\"Content-Type\" exists-action=\"override\">\n\t\t\t\t\t<value>application/x-www-form-urlencoded</value>\n\t\t\t\t</set-header>\n\t\t\t\t<set-body>@{ \n                    return \"client_id={{D365FOClientId}}&amp;resource=\" + \n                        context.Variables.GetValueOrDefault&lt;string&gt;(\"environment\") + \n                        \"&amp;client_secret={{D365FOClientSecret}}&amp;grant_type=client_credentials\"; \n                }</set-body>\n\t\t\t</send-request>\n\t\t\t<!-- Store result in cache -->\n\t\t\t<set-variable name=\"accessToken\" value=\"@((string)((IResponse)context.Variables[&quot;oauthResponse&quot;]).Body.As&lt;JObject&gt;()[&quot;access_token&quot;])\" />\n\t\t\t<cache-store-value key=\"@((string)context.Variables[&quot;environment&quot;] + &quot;-token-{{D365FOClientId}}&quot;)\" value=\"@((string)context.Variables[&quot;accessToken&quot;])\" duration=\"1200\" />\n\t\t\t<set-header name=\"Authorization\" exists-action=\"override\">\n\t\t\t\t<value>@(\"bearer \" + (string)context.Variables[\"accessToken\"])</value>\n\t\t\t</set-header>\n\t\t</when>\n\t\t<!-- If cache value exists -->\n\t\t<otherwise>\n\t\t\t<set-header name=\"Authorization\" exists-action=\"override\">\n\t\t\t\t<value>@(\"bearer \" + (string)context.Variables[\"bearerToken\"])</value>\n\t\t\t</set-header>\n\t\t</otherwise>\n\t</choose>\n</fragment>",
+    "_1._5": "<!--\n    IMPORTANT:\n    - <inbound> fragment\n    - Requires the environment variable. Best used in combination with SetEnvironmentVariable fragment.\n    - Also requires the following named values\n        - {{TenantId}}\n        - {{D365FOClientId}}\n        - {{D365FOClientSecret}}\n-->\n<fragment>\n\t<!-- Fetch token from cache -->\n\t<cache-lookup-value key=\"@((string)context.Variables[&quot;environment&quot;] + &quot;-token-{{D365FOClientId}}&quot;)\" variable-name=\"bearerToken\" />\n\t<choose>\n\t\t<!-- When a bearerToken is not available in cache -->\n\t\t<when condition=\"@(!context.Variables.ContainsKey(&quot;bearerToken&quot;))\">\n\t\t\t<send-request mode=\"new\" response-variable-name=\"oauthResponse\" timeout=\"20\" ignore-error=\"false\">\n\t\t\t\t<set-url>https://login.microsoftonline.com/{{TenantId}}/oauth2/token</set-url>\n\t\t\t\t<set-method>POST</set-method>\n\t\t\t\t<set-header name=\"Content-Type\" exists-action=\"override\">\n\t\t\t\t\t<value>application/x-www-form-urlencoded</value>\n\t\t\t\t</set-header>\n\t\t\t\t<set-body>@{ \n                    return \"client_id={{D365FOClientId}}&amp;resource=\" + \n                        context.Variables.GetValueOrDefault&lt;string&gt;(\"environment\") + \n                        \"&amp;client_secret={{D365FOClientSecret}}&amp;grant_type=client_credentials\"; \n                }</set-body>\n\t\t\t</send-request>\n\t\t\t<!-- Store result in cache -->\n\t\t\t<set-variable name=\"accessToken\" value=\"@((string)((IResponse)context.Variables[&quot;oauthResponse&quot;]).Body.As&lt;JObject&gt;()[&quot;access_token&quot;])\" />\n\t\t\t<cache-store-value key=\"@((string)context.Variables[&quot;environment&quot;] + &quot;-token-{{D365FOClientId}}&quot;)\" value=\"@((string)context.Variables[&quot;accessToken&quot;])\" duration=\"1200\" />\n\t\t\t<set-header name=\"Authorization\" exists-action=\"override\">\n\t\t\t\t<value>@(\"bearer \" + (string)context.Variables[\"accessToken\"])</value>\n\t\t\t</set-header>\n\t\t</when>\n\t\t<!-- If cache value exists -->\n\t\t<otherwise>\n\t\t\t<set-header name=\"Authorization\" exists-action=\"override\">\n\t\t\t\t<value>@(\"bearer \" + (string)context.Variables[\"bearerToken\"])</value>\n\t\t\t</set-header>\n\t\t</otherwise>\n\t</choose>\n</fragment>",
     "_1._6": "<!--\n    IMPORTANT:\n    - <inbound> fragment\n    - Requires the environment variable. Should be used in combination with the SetEnvironmentVariable fragment.\n-->\n<fragment>\n\t<set-backend-service base-url=\"@(context.Variables.GetValueOrDefault&lt;string&gt;(&quot;environment&quot;))\" />\n</fragment>",
     "_1.AddCrossCompanyParameterFragment": {
       "name": "AddCrossCompanyParameter",
@@ -145,7 +152,7 @@
       "name": "[format('{0}/{1}', format('D365FOAPIManagement-{0}', take(uniqueString(tenant().tenantId, resourceGroup().id), 5)), 'TenantId')]",
       "properties": {
         "displayName": "TenantId",
-        "value": "[tenant().tenantId]"
+        "value": "[parameters('tenantId')]"
       },
       "dependsOn": [
         "apiManagement"

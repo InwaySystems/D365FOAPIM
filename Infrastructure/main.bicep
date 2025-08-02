@@ -1,4 +1,11 @@
 @description('''
+Id (guid) of the tenant of the D365FO environment.
+You can find the tenant id in the about form of the D365FO environment in the licenses section under the name "Serial number".
+By default, the tenant id of the Azure Directory where this template is deployed will be used.
+''')
+param tenantId string = tenant().tenantId
+
+@description('''
 URL of the D365FO environment.
 ''')
 param d365foEnvironmentUrl string = 'https://d365fo-environment-url.dynamics.com'
@@ -66,7 +73,7 @@ resource tenantNamedValue 'Microsoft.ApiManagement/service/namedValues@2024-05-0
   name: 'TenantId'
   properties: {
     displayName: 'TenantId'
-    value: tenant().tenantId
+    value: tenantId
   }
 }
 

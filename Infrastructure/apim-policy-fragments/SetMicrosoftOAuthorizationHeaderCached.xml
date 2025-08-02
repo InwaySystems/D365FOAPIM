@@ -3,7 +3,7 @@
     - <inbound> fragment
     - Requires the environment variable. Best used in combination with SetEnvironmentVariable fragment.
     - Also requires the following named values
-        - {{TrivagoTenantId}}
+        - {{TenantId}}
         - {{D365FOClientId}}
         - {{D365FOClientSecret}}
 -->
