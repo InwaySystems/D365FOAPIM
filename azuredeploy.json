@@ -5,14 +5,14 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.177.2456",
-      "templateHash": "16854993760955559096"
+      "templateHash": "7893450269181841496"
     }
   },
   "resources": [
     {
       "type": "Microsoft.ApiManagement/service",
       "apiVersion": "2024-05-01",
-      "name": "D365FOAPIManagement",
+      "name": "[format('D365FOAPIManagement-{0}', take(uniqueString(tenant().tenantId, resourceGroup().id), 5))]",
       "location": "[resourceGroup().location]",
       "sku": {
         "name": "Consumption",

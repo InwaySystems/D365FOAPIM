@@ -1,6 +1,6 @@
 
 resource apiManagement 'Microsoft.ApiManagement/service@2024-05-01' = {
-  name: 'D365FOAPIManagement'
+  name: 'D365FOAPIManagement-${take(uniqueString(tenant().tenantId, resourceGroup().id), 5)}'
   location: resourceGroup().location
   sku: {
     name: 'Consumption'
