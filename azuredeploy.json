@@ -1,15 +1,28 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
   "contentVersion": "1.0.0.0",
   "metadata": {
     "_generator": {
       "name": "bicep",
       "version": "0.36.177.2456",
-      "templateHash": "7893450269181841496"
+      "templateHash": "10589845694040831670"
     }
   },
-  "resources": [
-    {
+  "parameters": {
+    "namedValueClientId": {
+      "type": "string",
+      "metadata": {
+        "description": "Id of app registration client for OAuth2.0 authentication with D365FO environment. Will be stored as a named value in API Management."
+      }
+    }
+  },
+  "variables": {
+    "applicationInsightsName": "[format('appInsights{0}', uniqueString(resourceGroup().id))]",
+    "appInsightsInstrumentationKeyNamedValueName": "ApplicationInsightsInstrumentationKey"
+  },
+  "resources": {
+    "apiManagement": {
       "type": "Microsoft.ApiManagement/service",
       "apiVersion": "2024-05-01",
       "name": "[format('D365FOAPIManagement-{0}', take(uniqueString(tenant().tenantId, resourceGroup().id), 5))]",
@@ -22,6 +35,136 @@
         "publisherEmail": "[deployer().userPrincipalName]",
         "publisherName": "[tenant().displayName]"
       }
+    },
+    "clientIdNamedValue": {
+      "type": "Microsoft.ApiManagement/service/namedValues",
+      "apiVersion": "2024-05-01",
+      "name": "[format('{0}/{1}', format('D365FOAPIManagement-{0}', take(uniqueString(tenant().tenantId, resourceGroup().id), 5)), 'D365FOClientId')]",
+      "properties": {
+        "displayName": "D365FOClientId",
+        "value": "[parameters('namedValueClientId')]"
+      },
+      "dependsOn": [
+        "apiManagement"
+      ]
+    },
+    "secretNamedValueAppInsights": {
+      "type": "Microsoft.ApiManagement/service/namedValues",
+      "apiVersion": "2024-05-01",
+      "name": "[format('{0}/{1}', format('D365FOAPIManagement-{0}', take(uniqueString(tenant().tenantId, resourceGroup().id), 5)), variables('appInsightsInstrumentationKeyNamedValueName'))]",
+      "properties": {
+        "displayName": "[variables('appInsightsInstrumentationKeyNamedValueName')]",
+        "secret": true,
+        "value": "[listOutputsWithSecureValues('appInsights', '2022-09-01').applicationInsightsInstrumentationKey]"
+      },
+      "dependsOn": [
+        "apiManagement",
+        "appInsights"
+      ]
+    },
+    "apimLogger": {
+      "type": "Microsoft.ApiManagement/service/loggers",
+      "apiVersion": "2024-05-01",
+      "name": "[format('{0}/{1}', format('D365FOAPIManagement-{0}', take(uniqueString(tenant().tenantId, resourceGroup().id), 5)), variables('applicationInsightsName'))]",
+      "properties": {
+        "loggerType": "applicationInsights",
+        "isBuffered": true,
+        "credentials": {
+          "instrumentationKey": "[format('{{{{{0}}}}}', variables('appInsightsInstrumentationKeyNamedValueName'))]"
+        }
+      },
+      "dependsOn": [
+        "apiManagement",
+        "secretNamedValueAppInsights"
+      ]
+    },
+    "appInsights": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "D365FOAPIManagementMonitoring",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "applicationInsightsName": {
+            "value": "[variables('applicationInsightsName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.36.177.2456",
+              "templateHash": "4989886732902460431"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Specifies the location in which the Azure Storage resources should be deployed."
+              }
+            },
+            "applicationInsightsName": {
+              "type": "string",
+              "defaultValue": "[format('appInsigths{0}', uniqueString(resourceGroup().id))]",
+              "metadata": {
+                "description": "Specifies the name of the Applications Insights resource."
+              }
+            },
+            "logAnalyticsWorkspaceName": {
+              "type": "string",
+              "defaultValue": "[format('logAnalytics{0}', uniqueString(resourceGroup().id))]",
+              "metadata": {
+                "description": "Specifies the name of the Log Analytics Workspace resource."
+              }
+            }
+          },
+          "resources": {
+            "logAnalyticsWorkspace": {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2023-09-01",
+              "name": "[parameters('logAnalyticsWorkspaceName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "name": "PerGB2018"
+                }
+              }
+            },
+            "appInsights": {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[parameters('applicationInsightsName')]",
+              "location": "[parameters('location')]",
+              "kind": "web",
+              "properties": {
+                "Application_Type": "web",
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
+              },
+              "dependsOn": [
+                "logAnalyticsWorkspace"
+              ]
+            }
+          },
+          "outputs": {
+            "applicationInsightsName": {
+              "type": "string",
+              "value": "[parameters('applicationInsightsName')]"
+            },
+            "applicationInsightsInstrumentationKey": {
+              "type": "securestring",
+              "value": "[reference('appInsights').InstrumentationKey]"
+            }
+          }
+        }
+      }
     }
-  ]
+  }
 }
