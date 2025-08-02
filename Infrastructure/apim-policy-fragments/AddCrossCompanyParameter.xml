@@ -1,0 +1,8 @@
+<!--
+    - <inbound> fragment
+-->
+<fragment>
+	<set-query-parameter name="cross-company" exists-action="override">
+		<value>true</value>
+	</set-query-parameter>
+</fragment>

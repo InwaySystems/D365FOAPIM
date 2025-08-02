@@ -70,6 +70,26 @@ resource tenantNamedValue 'Microsoft.ApiManagement/service/namedValues@2024-05-0
   }
 }
 
+// Add policy fragments
+import * as policyFragmentsStore from 'apim-policy-fragments.bicep'
+var policyFragments = policyFragmentsStore.fragments
+resource policyFragmentsResources 'Microsoft.ApiManagement/service/policyFragments@2024-05-01' = [
+  for fragment in policyFragments: {
+    parent: apiManagement
+    name: fragment.name
+    properties: {
+      value: fragment.value
+      description: fragment.description
+    }
+    dependsOn: [
+      d365FOUrlNamedValue
+      clientIdNamedValue
+      clientSecretNamedValue
+      tenantNamedValue
+    ]
+  }
+]
+
 // Add Application Insights for monitoring
 var applicationInsightsName string = 'appInsights${uniqueString(resourceGroup().id)}'
 module appInsights 'appInsights.bicep' = {

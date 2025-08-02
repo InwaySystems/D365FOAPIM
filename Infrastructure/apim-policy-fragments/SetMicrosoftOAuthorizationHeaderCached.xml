@@ -1,0 +1,42 @@
+<!--
+    IMPORTANT:
+    - <inbound> fragment
+    - Requires the environment variable. Best used in combination with SetEnvironmentVariable fragment.
+    - Also requires the following named values
+        - {{TrivagoTenantId}}
+        - {{D365FOClientId}}
+        - {{D365FOClientSecret}}
+-->
+<fragment>
+	<!-- Fetch token from cache -->
+	<cache-lookup-value key="@((string)context.Variables[&quot;environment&quot;] + &quot;-token-{{D365FOClientId}}&quot;)" variable-name="bearerToken" />
+	<choose>
+		<!-- When a bearerToken is not available in cache -->
+		<when condition="@(!context.Variables.ContainsKey(&quot;bearerToken&quot;))">
+			<send-request mode="new" response-variable-name="oauthResponse" timeout="20" ignore-error="false">
+				<set-url>https://login.microsoftonline.com/{{TenantId}}/oauth2/token</set-url>
+				<set-method>POST</set-method>
+				<set-header name="Content-Type" exists-action="override">
+					<value>application/x-www-form-urlencoded</value>
+				</set-header>
+				<set-body>@{ 
+                    return "client_id={{D365FOClientId}}&amp;resource=" + 
+                        context.Variables.GetValueOrDefault&lt;string&gt;("environment") + 
+                        "&amp;client_secret={{D365FOClientSecret}}&amp;grant_type=client_credentials"; 
+                }</set-body>
+			</send-request>
+			<!-- Store result in cache -->
+			<set-variable name="accessToken" value="@((string)((IResponse)context.Variables[&quot;oauthResponse&quot;]).Body.As&lt;JObject&gt;()[&quot;access_token&quot;])" />
+			<cache-store-value key="@((string)context.Variables[&quot;environment&quot;] + &quot;-token-{{D365FOClientId}}&quot;)" value="@((string)context.Variables[&quot;accessToken&quot;])" duration="1200" />
+			<set-header name="Authorization" exists-action="override">
+				<value>@("bearer " + (string)context.Variables["accessToken"])</value>
+			</set-header>
+		</when>
+		<!-- If cache value exists -->
+		<otherwise>
+			<set-header name="Authorization" exists-action="override">
+				<value>@("bearer " + (string)context.Variables["bearerToken"])</value>
+			</set-header>
+		</otherwise>
+	</choose>
+</fragment>

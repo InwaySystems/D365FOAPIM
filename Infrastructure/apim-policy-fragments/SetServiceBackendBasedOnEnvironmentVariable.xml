@@ -1,0 +1,8 @@
+<!--
+    IMPORTANT:
+    - <inbound> fragment
+    - Requires the environment variable. Should be used in combination with the SetEnvironmentVariable fragment.
+-->
+<fragment>
+	<set-backend-service base-url="@(context.Variables.GetValueOrDefault&lt;string&gt;(&quot;environment&quot;))" />
+</fragment>

@@ -1,0 +1,6 @@
+<!-- 
+    - <inbound> fragment
+-->
+<fragment>
+	<set-variable name="environment" value="@(context.Request.Headers.GetValueOrDefault(&quot;Environment&quot;, &quot;{{DefaultD365FOEnvironment}}&quot;))" />
+</fragment>

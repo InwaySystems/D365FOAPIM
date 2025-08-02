@@ -1,0 +1,6 @@
+<!--
+    - <outbound> fragment
+-->
+<fragment>
+	<retry condition="@(context.Response.StatusCode == 429)" count="3" interval="10" first-fast-retry="false" />
+</fragment>
