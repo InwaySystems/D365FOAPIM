@@ -17,7 +17,7 @@
         "description": "Id (guid) of the tenant of the D365FO environment.\nYou can find the tenant id in the about form of the D365FO environment in the licenses section under the name \"Serial number\".\nBy default, the tenant id of the Azure Directory where this template is deployed will be used.\n"
       }
     },
-    "d365foEnvironmentUrl": {
+    "d365FOEnvironmentUrl": {
       "type": "string",
       "defaultValue": "https://d365fo-environment-url.dynamics.com",
       "metadata": {
@@ -115,7 +115,7 @@
       "name": "[format('{0}/{1}', format('D365FOAPIManagement-{0}', take(uniqueString(tenant().tenantId, resourceGroup().id), 5)), 'DefaultD365FOEnvironment')]",
       "properties": {
         "displayName": "DefaultD365FOEnvironment",
-        "value": "[parameters('d365foEnvironmentUrl')]"
+        "value": "[parameters('d365FOEnvironmentUrl')]"
       },
       "dependsOn": [
         "apiManagement"

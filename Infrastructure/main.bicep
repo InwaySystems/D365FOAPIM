@@ -8,7 +8,7 @@ param tenantId string = tenant().tenantId
 @description('''
 URL of the D365FO environment.
 ''')
-param d365foEnvironmentUrl string = 'https://d365fo-environment-url.dynamics.com'
+param d365FOEnvironmentUrl string = 'https://d365fo-environment-url.dynamics.com'
 
 @description('''
 Id (guid) of app registration client for OAuth2.0 authentication with D365FO environment. 
@@ -45,7 +45,7 @@ resource d365FOUrlNamedValue 'Microsoft.ApiManagement/service/namedValues@2024-0
   name: 'DefaultD365FOEnvironment'
   properties: {
     displayName: 'DefaultD365FOEnvironment'
-    value: d365foEnvironmentUrl
+    value: d365FOEnvironmentUrl
   }
 }
 
