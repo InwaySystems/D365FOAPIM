@@ -186,3 +186,24 @@ resource d365foApiDiagnostics 'Microsoft.ApiManagement/service/apis/diagnostics@
     backend: logSettings
   }
 }
+
+// Enable service-level diagnostics for analytics dashboard
+resource apimServiceDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'APIMAnalytics'
+  scope: apiManagement
+  properties: {
+    workspaceId: appInsights.outputs.logAnalyticsWorkspaceId
+    logs: [
+      {
+        category: 'GatewayLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}
