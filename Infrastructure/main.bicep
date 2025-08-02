@@ -1,5 +1,22 @@
-@description('Id of app registration client for OAuth2.0 authentication with D365FO environment. Will be stored as a named value in API Management.')
-param namedValueClientId string
+@description('''
+URL of the D365FO environment.
+''')
+param d365foEnvironmentUrl string = 'https://d365fo-environment-url.dynamics.com'
+
+@description('''
+Id (guid) of app registration client for OAuth2.0 authentication with D365FO environment. 
+See https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/services-home-page#authentication for more details.
+Will be stored as a named value in API Management.
+''')
+param clientId string = '00000000-0000-0000-0000-000000000000'
+
+@description('''
+Client secret for OAuth2.0 authentication with D365FO environment. 
+See https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/services-home-page#authentication for more details.
+Will be stored as a secret named value in API Management.
+''')
+@secure()
+param clientSecret string
 
 // Create base API Management service resource
 resource apiManagement 'Microsoft.ApiManagement/service@2024-05-01' = {
@@ -15,12 +32,41 @@ resource apiManagement 'Microsoft.ApiManagement/service@2024-05-01' = {
   }
 }
 
+// Add named values for D365FO environment URL, client ID, client secret and tenant
+resource d365FOUrlNamedValue 'Microsoft.ApiManagement/service/namedValues@2024-05-01' = {
+  parent: apiManagement
+  name: 'DefaultD365FOEnvironment'
+  properties: {
+    displayName: 'DefaultD365FOEnvironment'
+    value: d365foEnvironmentUrl
+  }
+}
+
 resource clientIdNamedValue 'Microsoft.ApiManagement/service/namedValues@2024-05-01' = {
   parent: apiManagement
   name: 'D365FOClientId'
   properties: {
     displayName: 'D365FOClientId'
-    value: namedValueClientId
+    value: clientId
+  }
+}
+
+resource clientSecretNamedValue 'Microsoft.ApiManagement/service/namedValues@2024-05-01' = {
+  parent: apiManagement
+  name: 'D365FOClientSecret'
+  properties: {
+    displayName: 'D365FOClientSecret'
+    secret: true
+    value: clientSecret
+  }
+}
+
+resource tenantNamedValue 'Microsoft.ApiManagement/service/namedValues@2024-05-01' = {
+  parent: apiManagement
+  name: 'TenantId'
+  properties: {
+    displayName: 'TenantId'
+    value: tenant().tenantId
   }
 }
 

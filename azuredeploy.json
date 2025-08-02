@@ -6,14 +6,28 @@
     "_generator": {
       "name": "bicep",
       "version": "0.36.177.2456",
-      "templateHash": "10589845694040831670"
+      "templateHash": "10354735891031794736"
     }
   },
   "parameters": {
-    "namedValueClientId": {
+    "d365foEnvironmentUrl": {
       "type": "string",
+      "defaultValue": "https://d365fo-environment-url.dynamics.com",
       "metadata": {
-        "description": "Id of app registration client for OAuth2.0 authentication with D365FO environment. Will be stored as a named value in API Management."
+        "description": "URL of the D365FO environment.\n"
+      }
+    },
+    "clientId": {
+      "type": "string",
+      "defaultValue": "00000000-0000-0000-0000-000000000000",
+      "metadata": {
+        "description": "Id (guid) of app registration client for OAuth2.0 authentication with D365FO environment. \nSee https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/services-home-page#authentication for more details.\nWill be stored as a named value in API Management.\n"
+      }
+    },
+    "clientSecret": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Client secret for OAuth2.0 authentication with D365FO environment. \nSee https://learn.microsoft.com/en-us/dynamics365/fin-ops-core/dev-itpro/data-entities/services-home-page#authentication for more details.\nWill be stored as a secret named value in API Management.\n"
       }
     }
   },
@@ -36,13 +50,50 @@
         "publisherName": "[tenant().displayName]"
       }
     },
+    "d365FOUrlNamedValue": {
+      "type": "Microsoft.ApiManagement/service/namedValues",
+      "apiVersion": "2024-05-01",
+      "name": "[format('{0}/{1}', format('D365FOAPIManagement-{0}', take(uniqueString(tenant().tenantId, resourceGroup().id), 5)), 'DefaultD365FOEnvironment')]",
+      "properties": {
+        "displayName": "DefaultD365FOEnvironment",
+        "value": "[parameters('d365foEnvironmentUrl')]"
+      },
+      "dependsOn": [
+        "apiManagement"
+      ]
+    },
     "clientIdNamedValue": {
       "type": "Microsoft.ApiManagement/service/namedValues",
       "apiVersion": "2024-05-01",
       "name": "[format('{0}/{1}', format('D365FOAPIManagement-{0}', take(uniqueString(tenant().tenantId, resourceGroup().id), 5)), 'D365FOClientId')]",
       "properties": {
         "displayName": "D365FOClientId",
-        "value": "[parameters('namedValueClientId')]"
+        "value": "[parameters('clientId')]"
+      },
+      "dependsOn": [
+        "apiManagement"
+      ]
+    },
+    "clientSecretNamedValue": {
+      "type": "Microsoft.ApiManagement/service/namedValues",
+      "apiVersion": "2024-05-01",
+      "name": "[format('{0}/{1}', format('D365FOAPIManagement-{0}', take(uniqueString(tenant().tenantId, resourceGroup().id), 5)), 'D365FOClientSecret')]",
+      "properties": {
+        "displayName": "D365FOClientSecret",
+        "secret": true,
+        "value": "[parameters('clientSecret')]"
+      },
+      "dependsOn": [
+        "apiManagement"
+      ]
+    },
+    "tenantNamedValue": {
+      "type": "Microsoft.ApiManagement/service/namedValues",
+      "apiVersion": "2024-05-01",
+      "name": "[format('{0}/{1}', format('D365FOAPIManagement-{0}', take(uniqueString(tenant().tenantId, resourceGroup().id), 5)), 'TenantId')]",
+      "properties": {
+        "displayName": "TenantId",
+        "value": "[tenant().tenantId]"
       },
       "dependsOn": [
         "apiManagement"
